@@ -5,6 +5,7 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const FILES_DIR = process.env.FILES_DIR || path.join(__dirname, '..', 'dummy-files');
+const NODE_ID = process.env.NODE_ID || 'node-unknown';
 
 const files = {};
 if (fs.existsSync(FILES_DIR)) {
@@ -16,9 +17,14 @@ if (fs.existsSync(FILES_DIR)) {
 app.get('/', (req, res) => {
   res.json({
     service: 'API Serving File',
-    message: 'Tugas 1 - Little\'s Law: GET /files/:name',
+    node: NODE_ID,
+    message: 'GET /files/:name',
     tersedia: Object.keys(files),
   });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', node: NODE_ID });
 });
 
 app.get('/files/:name', (req, res, next) => {
