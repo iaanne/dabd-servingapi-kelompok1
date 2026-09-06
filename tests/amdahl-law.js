@@ -49,7 +49,7 @@ export function handleSummary(data) {
   };
 
   return {
-    [`tests/result-amdahl-${FILE_SIZE}.json`]: JSON.stringify(result, null, 2),
+    [`tests/tugas2-${FILE_SIZE}.json`]: JSON.stringify(result, null, 2),
     stdout: JSON.stringify(result, null, 2) + '\n',
   };
 }
