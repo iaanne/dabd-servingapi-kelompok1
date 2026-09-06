@@ -1,0 +1,15 @@
+# dummy files (dibangkitkan ulang via dummy-files/generate.js)
+dummy-files/*.bin
+
+# node
+node_modules/
+
+# python
+.venv/
+__pycache__/
+
+# log & temp
+*.log
+
+# os
+.DS_Store

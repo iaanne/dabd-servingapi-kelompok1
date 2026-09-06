@@ -1,0 +1,9 @@
+services:
+  api:
+    build: ./server
+    ports:
+      - "3001:3001"
+    environment:
+      FILES_DIR: /app/dummy-files
+    volumes:
+      - ./dummy-files:/app/dummy-files:ro
