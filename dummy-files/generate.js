@@ -6,10 +6,10 @@ const path = require('path');
 
 const FILES = {
   '1kb.bin': 1 * 1024,
+  '10kb.bin': 10 * 1024,
   '100kb.bin': 100 * 1024,
   '1000kb.bin': 1000 * 1024,
   '10000kb.bin': 10000 * 1024,
-  '100000kb.bin': 100000 * 1024,
 };
 
 function randomBytes(size) {
