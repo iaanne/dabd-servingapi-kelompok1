@@ -1,0 +1,14 @@
+{
+  "file": "1000kb",
+  "latency": {
+    "avg": "732.29",
+    "p90": "1375.75",
+    "p95": "1510.97",
+    "max": "2501.83"
+  },
+  "throughput": {
+    "reqPerSec": "131.85",
+    "totalRequests": 11868
+  },
+  "errorRate": "0.00%"
+}

@@ -1,0 +1,15 @@
+{
+  "file": "1000kb",
+  "url": "http://localhost:8080",
+  "latency": {
+    "avg": "737.12",
+    "p90": "1296.89",
+    "p95": "1411.16",
+    "max": "1776.68"
+  },
+  "throughput": {
+    "reqPerSec": "130.65",
+    "totalRequests": 11760
+  },
+  "errorRate": "0.00%"
+}
