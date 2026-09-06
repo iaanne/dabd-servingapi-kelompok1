@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# tools / binaries
+tools/k6
+
+# runtime logs
+*.log
+npm-debug.log*
+
+# dummy files (dibangkitkan ulang via dummy-files/generate.js)
+dummy-files/*.bin
+
+# raw load-test exports (too large / noisy)
+data/raw/
+
+# os
+.DS_Store
