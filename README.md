@@ -68,15 +68,15 @@ Semakin besar file → Latency (W) membengkak → Concurrency (L) membesar → T
 
 | File | T1 (1 node) | T2 (3 nodes + LB) | Speedup |
 |------|-------------|-------------------|---------|
-| 1kb  | 2,664.21 req/s | 2,915.29 req/s | **1.09x** |
-| 10kb | 2,364.32 req/s | 1,931.53 req/s | **0.82x** |
-| 100kb | 1,031.11 req/s | 698.96 req/s | **0.68x** |
-| 1MB  | 131.85 req/s | 106.08 req/s | **0.80x** |
-| 10MB | 11.32 req/s | 9.35 req/s | **0.83x** |
+| 1kb  | 2,664.21 req/s | 3,008.13 req/s | **1.13x** |
+| 10kb | 2,364.32 req/s | 2,704.45 req/s | **1.14x** |
+| 100kb | 1,031.11 req/s | 859.87 req/s | **0.83x** |
+| 1MB  | 131.85 req/s | 130.65 req/s | **0.99x** |
+| 10MB | 11.32 req/s | 11.94 req/s | **1.06x** |
 
 ### Pembuktian
 
-Speedup hampir tidak meningkat (0.68x – 1.09x) meskipun node ditambah dari 1 menjadi 3. Nginx sebagai bagian **serial (1-p)** menjadi bottleneck — semua request wajib melewati satu pintu masuk, sehingga penambahan node paralel tidak memberi speedup menuju 3x ideal.
+Dengan Nginx dituning (`proxy_buffering off`, keepalive), file kecil (1kb, 10kb) kini **lebih cepat** (+13–14%) karena 3 node memproses paralel. Namun speedup tetap jauh dari ideal 3x — pada file besar justru ~1.0x atau di bawah. Penyebab: workload I/O-bound (bukan CPU), 3 node berbagi satu mesin fisik, dan komponen **serial (1-p)** Nginx LB yang tetap membatasi — konsisten dengan Amdahl's Law.
 
 📄 Laporan lengkap: [`docs/amdahls-law.md`](docs/amdahls-law.md)
 
@@ -88,7 +88,7 @@ Speedup hampir tidak meningkat (0.68x – 1.09x) meskipun node ditambah dari 1 m
 .
 ├── compose.yaml              # Tugas 1: single node (:3001)
 ├── compose-amdahl.yaml       # Tugas 2: 3 nodes + nginx LB (:8080)
-├── nginx.conf                # Konfigurasi LB round-robin
+├── nginx.conf                # Konfigurasi LB round-robin (streaming, keepalive)
 ├── server/
 │   ├── app.js                # Express API (+ NODE_ID & /health)
 │   ├── Dockerfile

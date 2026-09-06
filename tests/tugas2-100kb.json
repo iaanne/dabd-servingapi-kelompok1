@@ -2,14 +2,14 @@
   "file": "100kb",
   "url": "http://localhost:8080",
   "latency": {
-    "avg": "136.76",
-    "p90": "261.48",
-    "p95": "285.13",
-    "max": "558.79"
+    "avg": "111.14",
+    "p90": "212.10",
+    "p95": "244.54",
+    "max": "567.85"
   },
   "throughput": {
-    "reqPerSec": "698.96",
-    "totalRequests": 62909
+    "reqPerSec": "859.87",
+    "totalRequests": 77391
   },
   "errorRate": "0.00%"
 }
