@@ -1,0 +1,12 @@
+{
+  "name": "dabd-api-serving",
+  "version": "1.0.0",
+  "description": "API Serving File (Tugas 1 Little's Law)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
