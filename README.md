@@ -30,6 +30,8 @@ Proyek praktikum **DABD (Desain Aplikasi Basis Data)** untuk membuktikan **Littl
 
 ### Hasil Benchmark
 
+> **Catatan:** angka di bawah adalah hasil **uji coba awal** (100 user, 90 detik). Hasil resmi per variasi user (`200/400/600/800/1000`) diisi setelah pengujian penuh — lihat `tests/tugas1-*-vu*.json` dan `tests/summary.csv`.
+
 | Ukuran File | p90 (ms) | p95 (ms) | Throughput (req/s) | Error Rate | Total Request |
 |-------------|----------|----------|---------------------|------------|---------------|
 | 1KB         | 62.57    | 67.24    | 2,664.21            | 0.00%      | 239,780       |
@@ -66,6 +68,8 @@ Semakin besar file → Latency (W) membengkak → Concurrency (L) membesar → T
 
 ### Hasil Benchmark (Speedup = Tugas2 / Tugas1)
 
+> **Catatan:** angka di bawah adalah hasil **uji coba awal** (100 user, 90 detik). Hasil resmi per variasi user diisi setelah pengujian penuh — lihat `tests/tugas2-*-vu*.json` dan `tests/summary.csv`.
+
 | File | T1 (1 node) | T2 (3 nodes + LB) | Speedup |
 |------|-------------|-------------------|---------|
 | 1kb  | 2,664.21 req/s | 3,008.13 req/s | **1.13x** |
@@ -99,6 +103,7 @@ Dengan Nginx dituning (`proxy_buffering off`, keepalive), file kecil (1kb, 10kb)
 │   ├── little-law.js         # Skrip k6 Tugas 1
 │   ├── amdahl-law.js         # Skrip k6 Tugas 2
 │   ├── run-all.js            # Runner semua variasi user
+│   ├── summary.csv           # Ringkasan gabungan semua run (untuk Excel/laporan)
 │   ├── tugas1-*-vu*.json     # Hasil benchmark Tugas 1 (per VU)
 │   └── tugas2-*-vu*.json     # Hasil benchmark Tugas 2 (per VU)
 └── docs/
@@ -155,7 +160,16 @@ Opsional env runner:
 - `FILES_LIST=1kb,10kb,100kb,1000kb,10000kb` → file yang diuji.
 - `DURATION=5m` → durasi tetap tiap run (jangan diubah saat membandingkan).
 
-Pada akhir run, ringkasan per VU (p90/p95/throughput) otomatis dicetak.
+Pada akhir run, ringkasan per VU (p90/p95/throughput) otomatis dicetak dan seluruh hasil digabung ke **`tests/summary.csv`** (kolom: tugas, file, VU, url, duration, avg/p90/p95/p99/max latensi, req/s, total request, bytes, http timing, pass/fail check, error rate) — tinggal dibuka di Excel untuk mengisi laporan.
+
+Isi tiap file JSON `tests/tugas{1,2}-{file}-vu{VUS}.json`:
+- `meta` — tugas, script, url, file, jumlah user (VU), durasi, timestamp
+- `latency_ms` — min, avg, med, p90, p95, p99, max
+- `http_timing_ms` — blocked, connecting, sending, waiting, receiving
+- `throughput` — reqPerSec & totalRequests; `iterations` — count & perSec
+- `data` — bytes diterima/terkirim (+ per detik)
+- `checks` — jumlah pass/fail status 200 & response < 10 detik
+- `errors` — errorRatePct & errorCount; `vusMax`
 
 ### MANUAL: satu skenario saja
 

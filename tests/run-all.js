@@ -60,6 +60,11 @@ async function main() {
 
   log('SEMUA TEST SELESAI');
   summarize(taskKeys);
+  await writeCsv(taskKeys);
+}
+
+function resultFile(task, file, vus) {
+  return path.join('tests', `${task.tag}-${file}-vu${vus}.json`);
 }
 
 // Ringkas hasil dari file JSON yang sudah ditulis k6
@@ -71,19 +76,61 @@ function summarize(taskKeys) {
     for (const file of FILES_LIST) {
       console.log(` >> file ${file}:`);
       for (const vus of VUS_LIST) {
-        const f = path.join('tests', `${task.tag}-${file}-vu${vus}.json`);
+        const f = resultFile(task, file, vus);
         if (!fs.existsSync(f)) {
           console.log(`    VU ${vus}: (file tidak ada)`);
           continue;
         }
         const d = JSON.parse(fs.readFileSync(f, 'utf8'));
         console.log(
-          `    VU ${vus}: p90=${d.latency.p90}ms p95=${d.latency.p95}ms ` +
-          `throughput=${d.throughput.reqPerSec}/s err=${d.errorRate}`
+          `    VU ${vus}: p90=${d.latency_ms.p90}ms p95=${d.latency_ms.p95}ms avg=${d.latency_ms.avg}ms ` +
+          `throughput=${d.throughput.reqPerSec}/s err=${d.errors.errorRatePct}%`
         );
       }
     }
   }
+}
+
+// Tulis tests/summary.csv berisi gabungan semua hasil (file, VU, latensi, throughput, error)
+function escapeCsv(s) {
+  return s === null || s === undefined ? '' : `"${String(s).replace(/"/g, '""')}"`;
+}
+
+async function writeCsv(taskKeys) {
+  const header = 'tugas,file,vus,url,duration,timestamp,avg,p90,p95,p99,max,' +
+    'reqPerSec,totalRequests,iterationsPerSec,receivedBytes,sentBytes,' +
+    'waiting,receiving,statusIs200Pass,statusIs200Fail,respBelow10sPass,respBelow10sFail,errorRatePct,errorCount';
+  const lines = [header];
+
+  for (const key of taskKeys) {
+    const task = TASKS[key];
+    for (const file of FILES_LIST) {
+      for (const vus of VUS_LIST) {
+        const f = resultFile(task, file, vus);
+        if (!fs.existsSync(f)) continue;
+        const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+        const L = d.latency_ms;
+        const T = d.throughput;
+        const It = d.iterations;
+        const Dt = d.data;
+        const C = d.checks;
+        const E = d.errors;
+        lines.push([
+          d.meta.tugas, d.meta.file, d.meta.vus, d.meta.url, d.meta.duration, d.meta.timestamp,
+          L.avg, L.p90, L.p95, L.p99, L.max,
+          T.reqPerSec, T.totalRequests, It.perSec, Dt.receivedBytes, Dt.sentBytes,
+          d.http_timing_ms.waiting, d.http_timing_ms.receiving,
+          C.statusIs200.passes, C.statusIs200.fails,
+          C.responseTimeBelow10s.passes, C.responseTimeBelow10s.fails,
+          E.errorRatePct, E.errorCount,
+        ].map(escapeCsv).join(','));
+      }
+    }
+  }
+
+  const out = path.join('tests', 'summary.csv');
+  fs.writeFileSync(out, '\ufeff' + lines.join('\n'), 'utf8'); // BOM agar rapi di Excel
+  console.log(`\n=> Ringkasan CSV tersimpan: ${out} (${lines.length - 1} baris)`);
 }
 
 main().catch((e) => {
