@@ -98,8 +98,9 @@ Dengan Nginx dituning (`proxy_buffering off`, keepalive), file kecil (1kb, 10kb)
 ├── tests/
 │   ├── little-law.js         # Skrip k6 Tugas 1
 │   ├── amdahl-law.js         # Skrip k6 Tugas 2
-│   ├── tugas1-*.json         # Hasil benchmark Tugas 1
-│   └── tugas2-*.json         # Hasil benchmark Tugas 2
+│   ├── run-all.js            # Runner semua variasi user
+│   ├── tugas1-*-vu*.json     # Hasil benchmark Tugas 1 (per VU)
+│   └── tugas2-*-vu*.json     # Hasil benchmark Tugas 2 (per VU)
 └── docs/
     ├── little-law.md         # Laporan Tugas 1
     └── amdahls-law.md        # Laporan Tugas 2
@@ -116,22 +117,59 @@ cd dummy-files
 node generate.js
 ```
 
-### Tugas 1 — Single Node
+### AUTO: Jalankan semua variasi user (disarankan)
 
+Skrip `tests/run-all.js` menjalankan untuk **tiap tugas × 5 file × 5 level user (200, 400, 600, 800, 1000)** dengan durasi tetap (`DURATION`, default 5 menit).
+
+**Langkah 1 — nyalakan server Tugas 1:**
 ```bash
-docker compose up --build -d        # API di :3001
-& "C:\Users\Acer\k6.exe" run --env "BASE_URL=http://localhost:3001" --env "FILE_SIZE=10mb" tests/little-law.js
+docker compose down && docker compose up --build -d
 ```
 
-### Tugas 2 — Multi Node + Nginx LB
-
+**Langkah 2 — jalankan Little's Law (T1):**
 ```bash
-docker compose down                 # stop Tugas 1
-docker compose -f compose-amdahl.yaml up --build -d   # LB di :8080
-& "C:\Users\Acer\k6.exe" run --env "BASE_URL=http://localhost:8080" --env "FILE_SIZE=10mb" tests/amdahl-law.js
+# PowerShell
+$env:TUGAS="1"; node tests/run-all.js
+
+# bash (Linux/Mac)
+TUGAS=1 node tests/run-all.js
+
+# Jika k6 tidak ada di PATH Windows:
+$env:K6_PATH="C:\Users\Acer\k6.exe"; node tests/run-all.js
 ```
 
-Parameter `--env FILE_SIZE` mendukung: `1kb`, `10kb`, `100kb`, `1000kb`, `10000kb`.
+**Langkah 3 — pindah ke server Tugas 2:**
+```bash
+docker compose down && docker compose -f compose-amdahl.yaml up --build -d
+```
+
+**Langkah 4 — jalankan Amdahl's Law (T2):**
+```bash
+$env:TUGAS="2"; node tests/run-all.js      # PowerShell
+TUGAS=2 node tests/run-all.js              # bash
+```
+
+Opsional env runner:
+- `TUGAS=both` → jalankan T1 & T2 sekaligus (default).
+- `VUS_LIST=200,400,600,800,1000` → daftar user (kelipatan 200, max 1000).
+- `FILES_LIST=1kb,10kb,100kb,1000kb,10000kb` → file yang diuji.
+- `DURATION=5m` → durasi tetap tiap run (jangan diubah saat membandingkan).
+
+Pada akhir run, ringkasan per VU (p90/p95/throughput) otomatis dicetak.
+
+### MANUAL: satu skenario saja
+
+```bash
+# Tugas 1 (single node :3001)
+& "C:\Users\Acer\k6.exe" run --env "BASE_URL=http://localhost:3001" --env "FILE_SIZE=1000kb" --env "VUS=400" --env "DURATION=5m" tests/little-law.js
+
+# Tugas 2 (3 node + LB :8080)
+& "C:\Users\Acer\k6.exe" run --env "BASE_URL=http://localhost:8080" --env "FILE_SIZE=1000kb" --env "VUS=400" --env "DURATION=5m" tests/amdahl-law.js
+```
+
+Parameter skrip k6: `FILE_SIZE` (`1kb–10000kb`), `VUS` (jumlah user), `DURATION` (durasi tes).
+
+Hasil otomatis tersimpan di `tests/tugas1-{file}-vu{VUS}.json` dan `tests/tugas2-{file}-vu{VUS}.json`.
 
 ---
 

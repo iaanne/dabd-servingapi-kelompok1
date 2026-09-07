@@ -5,14 +5,12 @@ import { Rate } from 'k6/metrics';
 const errorRate = new Rate('errors');
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 const FILE_SIZE = __ENV.FILE_SIZE || '10000kb';
+const VUS = Number(__ENV.VUS || 100);
+const DURATION = __ENV.DURATION || '5m';
 
 export const options = {
-  stages: [
-    { duration: '15s', target: 50 },
-    { duration: '30s', target: 100 },
-    { duration: '30s', target: 200 },
-    { duration: '15s', target: 0 },
-  ],
+  vus: VUS,
+  duration: DURATION,
 };
 
 export default function () {
@@ -33,6 +31,8 @@ export function handleSummary(data) {
 
   const result = {
     file: FILE_SIZE,
+    vus: VUS,
+    duration: DURATION,
     url: BASE_URL,
     latency: {
       avg: d?.avg?.toFixed(2),
@@ -49,7 +49,7 @@ export function handleSummary(data) {
   };
 
   return {
-    [`tests/tugas2-${FILE_SIZE}.json`]: JSON.stringify(result, null, 2),
+    [`tests/tugas2-${FILE_SIZE}-vu${VUS}.json`]: JSON.stringify(result, null, 2),
     stdout: JSON.stringify(result, null, 2) + '\n',
   };
 }
